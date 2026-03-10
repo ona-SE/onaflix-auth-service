@@ -1,0 +1,30 @@
+{
+  "name": "onaflix-auth-service",
+  "version": "1.0.0",
+  "description": "Authentication service for OnaFlix platform",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.7.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.2"
+  }
+}

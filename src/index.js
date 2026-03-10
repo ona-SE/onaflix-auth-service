@@ -1,0 +1,59 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const url = require('url');
+const querystring = require('querystring');
+require('dotenv').config();
+
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+
+const app = express();
+const PORT = process.env.PORT || 3002;
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Deprecated: url.parse (should use new URL())
+app.use((req, res, next) => {
+  const parsed = url.parse(req.url, true);
+  req.parsedUrl = parsed;
+  req.queryParams = querystring.parse(parsed.query || '');
+  next();
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'auth', uptime: process.uptime() });
+});
+
+// Deprecated: Buffer constructor without new
+app.get('/api/auth/token-info', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  try {
+    const parts = token.split('.');
+    const payload = Buffer(parts[1], 'base64').toString('utf8');
+    res.json(JSON.parse(payload));
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid token format' });
+  }
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Auth service running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
