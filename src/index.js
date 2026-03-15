@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const url = require('url');
-const querystring = require('querystring');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -15,11 +13,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Deprecated: url.parse (should use new URL())
 app.use((req, res, next) => {
-  const parsed = url.parse(req.url, true);
+  const parsed = new URL(req.url, `http://${req.headers.host}`);
   req.parsedUrl = parsed;
-  req.queryParams = querystring.parse(parsed.query || '');
+  req.queryParams = Object.fromEntries(parsed.searchParams);
   next();
 });
 
@@ -38,7 +35,7 @@ app.get('/api/auth/token-info', (req, res) => {
   }
   try {
     const parts = token.split('.');
-    const payload = Buffer(parts[1], 'base64').toString('utf8');
+    const payload = Buffer.from(parts[1], 'base64').toString('utf8');
     res.json(JSON.parse(payload));
   } catch (err) {
     res.status(400).json({ error: 'Invalid token format' });

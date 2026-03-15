@@ -2,8 +2,6 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const querystring = require('querystring');
-
 const router = express.Router();
 
 // In-memory user store (demo purposes)
@@ -24,8 +22,7 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'User already exists' });
     }
 
-    // Deprecated: new Buffer() should be Buffer.from()
-    const salt = new Buffer(bcrypt.genSaltSync(10)).toString('hex');
+    const salt = Buffer.from(bcrypt.genSaltSync(10)).toString('hex');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = {
@@ -82,18 +79,17 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Deprecated: querystring.stringify (should use URLSearchParams)
 router.get('/callback', (req, res) => {
   const { code, state } = req.query;
   if (!code) {
     return res.status(400).json({ error: 'Missing authorization code' });
   }
 
-  const redirectParams = querystring.stringify({
+  const redirectParams = new URLSearchParams({
     code,
     state: state || '',
     provider: 'onaflix',
-  });
+  }).toString();
 
   res.redirect(`/auth/complete?${redirectParams}`);
 });

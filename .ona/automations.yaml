@@ -1,0 +1,18 @@
+tasks:
+  installDeps:
+    name: Install dependencies
+    description: Install npm dependencies.
+    command: |
+      npm install
+    triggeredBy:
+      - postDevcontainerStart
+
+services:
+  dev-server:
+    name: Auth Service (dev)
+    description: Run the auth service with nodemon.
+    commands:
+      start: |
+        npm run dev
+      ready: |
+        curl -f http://localhost:3002/health
