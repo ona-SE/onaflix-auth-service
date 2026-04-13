@@ -1,0 +1,11 @@
+{
+  "name": "onaflix-auth-service",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "forwardPorts": [3002],
+  "portsAttributes": {
+    "3002": {
+      "label": "Auth Service",
+      "onAutoForward": "notify"
+    }
+  }
+}
