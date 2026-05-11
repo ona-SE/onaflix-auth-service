@@ -1,8 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-const url = require('url');
-const querystring = require('querystring');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -12,14 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Deprecated: url.parse (should use new URL())
 app.use((req, res, next) => {
-  const parsed = url.parse(req.url, true);
-  req.parsedUrl = parsed;
-  req.queryParams = querystring.parse(parsed.query || '');
+  const fullUrl = new URL(req.url, `http://${req.headers.host}`);
+  req.parsedUrl = fullUrl;
+  req.queryParams = Object.fromEntries(fullUrl.searchParams);
   next();
 });
 
@@ -30,7 +26,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'auth', uptime: process.uptime() });
 });
 
-// Deprecated: Buffer constructor without new
 app.get('/api/auth/token-info', (req, res) => {
   const token = req.headers.authorization;
   if (!token) {
@@ -38,7 +33,7 @@ app.get('/api/auth/token-info', (req, res) => {
   }
   try {
     const parts = token.split('.');
-    const payload = Buffer(parts[1], 'base64').toString('utf8');
+    const payload = Buffer.from(parts[1], 'base64').toString('utf8');
     res.json(JSON.parse(payload));
   } catch (err) {
     res.status(400).json({ error: 'Invalid token format' });
