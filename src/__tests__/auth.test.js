@@ -62,4 +62,58 @@ describe('Auth Service', () => {
       expect(res.status).toBe(401);
     });
   });
+
+  describe('Modern Node APIs', () => {
+    let user;
+    let token;
+
+    beforeAll(async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ email: 'modern@example.com', password: 'secret' });
+
+      user = res.body.user;
+      token = res.body.token;
+    });
+
+    it('decodes a base64url token payload', async () => {
+      const res = await request(app)
+        .get('/api/auth/token-info')
+        .set('Authorization', token);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ userId: user.id, email: user.email });
+    });
+
+    it('encodes callback parameters with URLSearchParams', async () => {
+      const res = await request(app)
+        .get('/api/auth/callback')
+        .query({ code: 'code value', state: 'state/value' });
+
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe(
+        '/auth/complete?code=code+value&state=state%2Fvalue&provider=onaflix'
+      );
+    });
+
+    it('resolves avatar URLs with the WHATWG URL API', async () => {
+      const res = await request(app)
+        .get('/api/users/avatar')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.avatarUrl).toBe(
+        `https://avatars.onaflix.internal/api/avatar/${user.id}`
+      );
+    });
+
+    it('removes user data recursively when the directory is absent', async () => {
+      const res = await request(app)
+        .delete('/api/users/data')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('User data deleted');
+    });
+  });
 });

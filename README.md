@@ -4,15 +4,15 @@ Authentication and authorization service for the OnaFlix platform. Handles user 
 
 ## Stack
 
-- **Runtime:** Node.js 14
-- **Framework:** Express 4
+- **Runtime:** Node.js 20
+- **Framework:** Express 5
 - **Auth:** JWT (jsonwebtoken)
 - **Password hashing:** bcryptjs
 
 ## Setup
 
 ```bash
-nvm use 14
+nvm use 20
 npm install
 cp .env.example .env
 npm run dev

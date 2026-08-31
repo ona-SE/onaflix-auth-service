@@ -1,5 +1,4 @@
 const express = require('express');
-const url = require('url');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
@@ -29,21 +28,19 @@ router.get('/me', authenticate, (req, res) => {
   });
 });
 
-// Deprecated: url.resolve (should use new URL())
 router.get('/avatar', authenticate, (req, res) => {
   const baseUrl = process.env.AVATAR_SERVICE_URL || 'https://avatars.onaflix.internal';
-  const avatarUrl = url.resolve(baseUrl, `/api/avatar/${req.user.userId}`);
+  const avatarUrl = new URL(`/api/avatar/${req.user.userId}`, baseUrl).toString();
   res.json({ avatarUrl });
 });
 
-// Deprecated: fs.rmdir with recursive option (should use fs.rm)
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 router.delete('/data', authenticate, (req, res) => {
   const userDataDir = path.join('/tmp', 'user-data', req.user.userId);
 
-  fs.rmdir(userDataDir, { recursive: true }, (err) => {
+  fs.rm(userDataDir, { recursive: true, force: true }, (err) => {
     if (err && err.code !== 'ENOENT') {
       console.error('Failed to delete user data:', err);
       return res.status(500).json({ error: 'Failed to delete user data' });
