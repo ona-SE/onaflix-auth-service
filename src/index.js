@@ -12,13 +12,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  const parsed = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  req.parsedUrl = parsed;
-  req.queryParams = Object.fromEntries(parsed.searchParams);
-  next();
-});
-
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
@@ -26,6 +19,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'auth', uptime: process.uptime() });
 });
 
+// Deprecated: Buffer constructor without new
 app.get('/api/auth/token-info', (req, res) => {
   const token = req.headers.authorization;
   if (!token) {

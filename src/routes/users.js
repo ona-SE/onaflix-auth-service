@@ -1,5 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const router = express.Router();
 
@@ -30,17 +32,14 @@ router.get('/me', authenticate, (req, res) => {
 
 router.get('/avatar', authenticate, (req, res) => {
   const baseUrl = process.env.AVATAR_SERVICE_URL || 'https://avatars.onaflix.internal';
-  const avatarUrl = new URL(`/api/avatar/${req.user.userId}`, baseUrl).toString();
+  const avatarUrl = new URL(`/api/avatar/${encodeURIComponent(req.user.userId)}`, baseUrl);
   res.json({ avatarUrl });
 });
-
-const fs = require('node:fs');
-const path = require('node:path');
 
 router.delete('/data', authenticate, (req, res) => {
   const userDataDir = path.join('/tmp', 'user-data', req.user.userId);
 
-  fs.rm(userDataDir, { recursive: true, force: true }, (err) => {
+  fs.rm(userDataDir, { recursive: true }, (err) => {
     if (err && err.code !== 'ENOENT') {
       console.error('Failed to delete user data:', err);
       return res.status(500).json({ error: 'Failed to delete user data' });

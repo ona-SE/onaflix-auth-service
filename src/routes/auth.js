@@ -23,7 +23,6 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'User already exists' });
     }
 
-    const salt = Buffer.from(bcrypt.genSaltSync(10)).toString('hex');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = {
@@ -31,7 +30,6 @@ router.post('/register', async (req, res) => {
       email,
       name: name || email.split('@')[0],
       password: hashedPassword,
-      salt,
       createdAt: new Date().toISOString(),
     };
 
